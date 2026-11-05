@@ -13,7 +13,7 @@ type HTTPConfig struct {
 	ReadTimeout       time.Duration `yaml:"read_timeout" env:"API_READ_TIMEOUT" env-default:"10s"`
 	WriteTimeout      time.Duration `yaml:"write_timeout" env:"API_WRITE_TIMEOUT" env-default:"10s"`
 	IdleTimeout       time.Duration `yaml:"idle_timeout" env:"API_IDLE_TIMEOUT" env-default:"60s"`
-	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout" env:"SHUTDOWN_TIMEOUT" env-default:"8s"`
+	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout" env:"API_SHUTDOWN_TIMEOUT" env-default:"8s"`
 	BodyLimit         int64         `yaml:"body_limit" env:"BODY_LIMIT" env-default:"1048576"`
 }
 

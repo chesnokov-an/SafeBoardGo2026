@@ -153,7 +153,7 @@ paths:
 
 components:
   schemas:
-    ThreatCategory:
+    Category:
       type: string
       description: Категория угрозы. Если не передана, используется `unknown`.
       enum:
@@ -200,7 +200,7 @@ components:
           description: Краткое описание угрозы
           example: Тестовое описание вредоносной программы 
         category:
-          $ref: '#/components/schemas/ThreatCategory'
+          $ref: '#/components/schemas/Category'
         severity:
           $ref: '#/components/schemas/Severity' 
         tags:
@@ -241,7 +241,7 @@ components:
           description: Краткое описание угрозы
           example: Тестовое описание вредоносной программы 
         category:
-          $ref: '#/components/schemas/ThreatCategory'
+          $ref: '#/components/schemas/Category'
         severity:
           $ref: '#/components/schemas/Severity' 
         tags:
@@ -295,7 +295,7 @@ components:
           description: Краткое описание угрозы
           example: Тестовое описание вредоносной программы 
         category:
-          $ref: '#/components/schemas/ThreatCategory'
+          $ref: '#/components/schemas/Category'
         severity:
           $ref: '#/components/schemas/Severity' 
         tags:
