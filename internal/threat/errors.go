@@ -27,7 +27,6 @@ const (
 	reasonDateOrder    = "must not be before firstSeen"
 )
 
-// Error implements the error interface.
 func (e *ValidationError) Error() string {
 	if e == nil || len(e.Fields) == 0 {
 		return "validation failed"
@@ -44,7 +43,6 @@ func (e *ValidationError) Error() string {
 	return b.String()
 }
 
-// Add appends a field-level validation problem.
 func (e *ValidationError) Add(field FieldError) {
 	e.Fields = append(e.Fields, field)
 }

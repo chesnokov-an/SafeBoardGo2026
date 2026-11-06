@@ -283,8 +283,8 @@ func TestMemoryConcurrentAccess(t *testing.T) {
 			}
 
 			updated := testThreat(md5, "updated")
-			if err := store.Replace(ctx, updated); err != nil {
-				t.Errorf("Replace(%s) error = %v", md5, err)
+			if replaceErr := store.Replace(ctx, updated); replaceErr != nil {
+				t.Errorf("Replace(%s) error = %v", md5, replaceErr)
 				return
 			}
 

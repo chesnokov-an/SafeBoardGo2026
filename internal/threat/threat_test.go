@@ -76,6 +76,84 @@ func TestNormalizeMD5(t *testing.T) {
 	}
 }
 
+func TestParseMD5(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:  "valid lower case",
+			input: "d41d8cd98f00b204e9800998ecf8427e",
+			want:  "d41d8cd98f00b204e9800998ecf8427e",
+		},
+		{
+			name:  "valid upper case",
+			input: "D41D8CD98F00B204E9800998ECF8427E",
+			want:  "d41d8cd98f00b204e9800998ecf8427e",
+		},
+		{
+			name:  "mixed case",
+			input: "D41d8cd98f00b204e9800998ecf8427e",
+			want:  "d41d8cd98f00b204e9800998ecf8427e",
+		},
+		{
+			name:    "empty",
+			input:   "",
+			wantErr: true,
+		},
+		{
+			name:    "too short",
+			input:   "d41d8cd98f00b204e9800998ecf8427",
+			wantErr: true,
+		},
+		{
+			name:    "too long",
+			input:   "d41d8cd98f00b204e9800998ecf8427e0",
+			wantErr: true,
+		},
+		{
+			name:    "non hexadecimal",
+			input:   strings.Repeat("z", 32),
+			wantErr: true,
+		},
+		{
+			name:    "leading space",
+			input:   " d41d8cd98f00b204e9800998ecf8427e",
+			wantErr: true,
+		},
+		{
+			name:    "trailing space",
+			input:   "d41d8cd98f00b204e9800998ecf8427e ",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseMD5(tt.input)
+			if tt.wantErr {
+				ve := wantFields(t, err, "md5")
+				if ve.Fields[0].Reason != reasonMD5 {
+					t.Errorf("reason = %q, want %q", ve.Fields[0].Reason, reasonMD5)
+				}
+				if got != "" {
+					t.Errorf("ParseMD5() = %q, want empty string", got)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("ParseMD5() error = %v, want nil", err)
+			}
+			if got != tt.want {
+				t.Errorf("ParseMD5() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestNormalizeName(t *testing.T) {
 	if got, want := normalizeName("  Trojan  "), "Trojan"; got != want {
 		t.Errorf("normalizeName() = %q, want %q", got, want)
