@@ -9,11 +9,13 @@ import (
 	"github.com/chesnokov-an/SafeBoardGo2026/internal/threat"
 )
 
+// Memory is a concurrency-safe in-memory Store.
 type Memory struct {
 	mu    sync.RWMutex
 	items map[string]threat.Threat
 }
 
+// NewMemory returns an empty in-memory store.
 func NewMemory() *Memory {
 	return &Memory{
 		mu:    sync.RWMutex{},
@@ -21,6 +23,7 @@ func NewMemory() *Memory {
 	}
 }
 
+// Create implements Store.
 func (m *Memory) Create(ctx context.Context, t threat.Threat) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -32,6 +35,7 @@ func (m *Memory) Create(ctx context.Context, t threat.Threat) error {
 	return nil
 }
 
+// Get implements Store.
 func (m *Memory) Get(ctx context.Context, md5 string) (threat.Threat, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -42,6 +46,7 @@ func (m *Memory) Get(ctx context.Context, md5 string) (threat.Threat, error) {
 	return cloneThreat(t), nil
 }
 
+// Replace implements Store.
 func (m *Memory) Replace(ctx context.Context, t threat.Threat) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -52,6 +57,7 @@ func (m *Memory) Replace(ctx context.Context, t threat.Threat) error {
 	return nil
 }
 
+// cloneThreat returns a deep copy of t so callers cannot mutate stored data.
 func cloneThreat(t threat.Threat) threat.Threat {
 	clone := t
 	if t.Tags != nil {

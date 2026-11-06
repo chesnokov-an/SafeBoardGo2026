@@ -1,0 +1,10 @@
+.git
+.gitignore
+.golangci.yml
+bin
+session.json
+*.md
+Makefile
+run_lint.sh
+Dockerfile
+docker-compose.yml

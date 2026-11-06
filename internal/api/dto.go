@@ -7,6 +7,7 @@ import (
 	"github.com/chesnokov-an/SafeBoardGo2026/internal/threat"
 )
 
+// createThreatRequest is the JSON body of POST /info.
 type createThreatRequest struct {
 	MD5         string     `json:"md5"`
 	Name        string     `json:"name"`
@@ -18,6 +19,8 @@ type createThreatRequest struct {
 	LastSeen    *time.Time `json:"lastSeen"`
 }
 
+// updateThreatRequest is the JSON body of PUT /info/{md5}. MD5 is taken from
+// the path, so a body md5 field is ignored.
 type updateThreatRequest struct {
 	Name        string     `json:"name"`
 	Description *string    `json:"description"`
@@ -28,6 +31,7 @@ type updateThreatRequest struct {
 	LastSeen    *time.Time `json:"lastSeen"`
 }
 
+// threatResponse is the JSON representation of a threat.
 type threatResponse struct {
 	MD5         string          `json:"md5"`
 	Name        string          `json:"name"`
@@ -39,6 +43,7 @@ type threatResponse struct {
 	LastSeen    *time.Time      `json:"lastSeen"`
 }
 
+// toThreat converts and validates a create request.
 func (r createThreatRequest) toThreat() (threat.Threat, error) {
 	return buildThreat(threat.Threat{
 		MD5:         r.MD5,
@@ -52,6 +57,7 @@ func (r createThreatRequest) toThreat() (threat.Threat, error) {
 	}, r.Category, r.Severity)
 }
 
+// toThreat converts and validates an update request using md5 from the path.
 func (r updateThreatRequest) toThreat(md5 string) (threat.Threat, error) {
 	return buildThreat(threat.Threat{
 		MD5:         md5,
@@ -65,6 +71,7 @@ func (r updateThreatRequest) toThreat(md5 string) (threat.Threat, error) {
 	}, r.Category, r.Severity)
 }
 
+// derefString returns the pointed-to value or "" when p is nil.
 func derefString(p *string) string {
 	if p == nil {
 		return ""
@@ -72,6 +79,7 @@ func derefString(p *string) string {
 	return *p
 }
 
+// buildThreat merges transport-level checks with domain validation.
 func buildThreat(in threat.Threat, category, severity *string) (threat.Threat, error) {
 	ve := threat.ValidationError{}
 
@@ -96,6 +104,7 @@ func buildThreat(in threat.Threat, category, severity *string) (threat.Threat, e
 	return out, nil
 }
 
+// newThreatResponse maps a domain threat to its API representation.
 func newThreatResponse(t threat.Threat) threatResponse {
 	return threatResponse{
 		MD5:         t.MD5,

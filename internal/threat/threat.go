@@ -1,9 +1,13 @@
+// Package threat contains the threat domain model, its normalization rules,
+// and validation.
 package threat
 
 import "time"
 
+// Category is a threat classification.
 type Category string
 
+// Supported threat categories.
 const (
 	CategoryMalware    Category = "malware"
 	CategoryRansomware Category = "ransomware"
@@ -17,8 +21,10 @@ const (
 	CategoryUnknown    Category = "unknown"
 )
 
+// Severity is a threat danger level.
 type Severity string
 
+// Supported threat severities.
 const (
 	SeverityLow      Severity = "low"
 	SeverityMedium   Severity = "medium"
@@ -27,6 +33,7 @@ const (
 	SeverityUnknown  Severity = "unknown"
 )
 
+// Threat is a validated threat record. FirstSeen and LastSeen are optional.
 type Threat struct {
 	MD5         string
 	Name        string

@@ -1,3 +1,4 @@
+// Command server runs the threat exchange HTTP service.
 package main
 
 import (
@@ -30,6 +31,7 @@ func main() {
 	}
 }
 
+// run starts the HTTP server and shuts it down gracefully on SIGINT or SIGTERM.
 func run(cfg config.Config, log *slog.Logger) error {
 	log.Info("starting server")
 	log.Debug("debug messages are enabled")
@@ -72,6 +74,8 @@ func run(cfg config.Config, log *slog.Logger) error {
 	return nil
 }
 
+// MustMakeLogger returns a text logger for the given level and panics on an
+// unknown level.
 func MustMakeLogger(logLevel string) *slog.Logger {
 	var level slog.Level
 	switch logLevel {

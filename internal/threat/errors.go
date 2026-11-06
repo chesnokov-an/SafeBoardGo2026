@@ -4,11 +4,13 @@ import (
 	"strings"
 )
 
+// FieldError describes one invalid field and the reason it was rejected.
 type FieldError struct {
 	Field  string
 	Reason string
 }
 
+// ValidationError aggregates all field errors found during one validation pass.
 type ValidationError struct {
 	Fields []FieldError
 }

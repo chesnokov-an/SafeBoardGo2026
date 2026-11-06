@@ -1,3 +1,4 @@
+// Package api implements the HTTP transport for the threat exchange service.
 package api
 
 import (
@@ -9,12 +10,14 @@ import (
 	"github.com/chesnokov-an/SafeBoardGo2026/internal/threat"
 )
 
+// Handler serves the threat and health endpoints.
 type Handler struct {
 	store     storage.Store
 	bodyLimit int64
 	log       *slog.Logger
 }
 
+// New creates a Handler backed by store. A nil logger falls back to slog.Default.
 func New(store storage.Store, bodyLimit int64, log *slog.Logger) *Handler {
 	if log == nil {
 		log = slog.Default()
@@ -22,6 +25,7 @@ func New(store storage.Store, bodyLimit int64, log *slog.Logger) *Handler {
 	return &Handler{store: store, bodyLimit: bodyLimit, log: log}
 }
 
+// Routes returns a mux with all service routes.
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /info/{md5}", h.GetThreat)
@@ -31,6 +35,7 @@ func (h *Handler) Routes() http.Handler {
 	return mux
 }
 
+// GetThreat handles GET /info/{md5}.
 func (h *Handler) GetThreat(w http.ResponseWriter, r *http.Request) {
 	md5, err := threat.ParseMD5(r.PathValue("md5"))
 	if err != nil {
@@ -50,6 +55,8 @@ func (h *Handler) GetThreat(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, http.StatusOK, newThreatResponse(t))
 }
 
+// ReplaceThreat handles PUT /info/{md5}. The MD5 from the path takes
+// precedence over any value in the request body.
 func (h *Handler) ReplaceThreat(w http.ResponseWriter, r *http.Request) {
 	md5, err := threat.ParseMD5(r.PathValue("md5"))
 	if err != nil {
@@ -78,6 +85,7 @@ func (h *Handler) ReplaceThreat(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, http.StatusOK, newThreatResponse(t))
 }
 
+// CreateThreat handles POST /info.
 func (h *Handler) CreateThreat(w http.ResponseWriter, r *http.Request) {
 	var req createThreatRequest
 	if httpErr := h.decodeJSON(w, r, &req); httpErr != nil {
@@ -101,6 +109,7 @@ func (h *Handler) CreateThreat(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, 201, newThreatResponse(t))
 }
 
+// Health handles GET /health.
 func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)

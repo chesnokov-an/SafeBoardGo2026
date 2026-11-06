@@ -17,6 +17,8 @@ const (
 
 var regexpMD5 = regexp.MustCompile("^[a-fA-F0-9]{32}$")
 
+// New normalizes input and validates it. The returned threat is the canonical
+// form stored by the service.
 func New(input Threat) (Threat, error) {
 	out := normalize(&input)
 	err := validate(&out)
@@ -38,6 +40,7 @@ func validateMD5(md5 string) *FieldError {
 	return nil
 }
 
+// ParseMD5 lower-cases rawMD5 and validates that it is 32 hexadecimal digits.
 func ParseMD5(rawMD5 string) (string, error) {
 	md5 := normalizeMD5(rawMD5)
 	field := validateMD5(md5)
@@ -103,6 +106,7 @@ func validateSeverity(s Severity) *FieldError {
 	return &FieldError{"severity", reasonSeverity}
 }
 
+// normalizeTags trims, lower-cases, sorts, and deduplicates tags in place.
 func normalizeTags(tags []string) []string {
 	if tags == nil {
 		return []string{}
@@ -115,6 +119,7 @@ func normalizeTags(tags []string) []string {
 	return tags
 }
 
+// validateTags rejects nil tags, more than maxTags items, and empty or too long tags.
 func validateTags(tags []string) *FieldError {
 	if tags == nil {
 		return &FieldError{"tags", reasonTagNil}
@@ -131,6 +136,7 @@ func validateTags(tags []string) *FieldError {
 	return nil
 }
 
+// normalizeTime returns a UTC copy of t, or nil when t is nil.
 func normalizeTime(t *time.Time) *time.Time {
 	if t == nil {
 		return nil
@@ -139,6 +145,8 @@ func normalizeTime(t *time.Time) *time.Time {
 	return &u
 }
 
+// validateTime accepts nil dates and equal first/last dates, but rejects a
+// lastSeen earlier than firstSeen.
 func validateTime(t1, t2 *time.Time) *FieldError {
 	if t1 != nil && t1.Location() != time.UTC {
 		return &FieldError{"firstSeen", reasonUTC}
@@ -152,6 +160,7 @@ func validateTime(t1, t2 *time.Time) *FieldError {
 	return nil
 }
 
+// normalize applies defaults and canonicalizes all fields.
 func normalize(t *Threat) Threat {
 	return Threat{
 		MD5:         normalizeMD5(t.MD5),
@@ -165,6 +174,7 @@ func normalize(t *Threat) Threat {
 	}
 }
 
+// validate collects all field errors in a single pass.
 func validate(t *Threat) error {
 	fields := []*FieldError{
 		validateMD5(t.MD5),
