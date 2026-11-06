@@ -1,62 +1,50 @@
 package threat
 
-import "time"
-
-type Category string
-
-const (
-	CategoryMalware    Category = "malware"
-	CategoryRansomware Category = "ransomware"
-	CategoryTrojan     Category = "trojan"
-	CategoryWorm       Category = "worm"
-	CategorySpyware    Category = "spyware"
-	CategoryPhishing   Category = "phishing"
-	CategoryBotnet     Category = "botnet"
-	CategoryExploit    Category = "exploit"
-	CategoryOther      Category = "other"
-	CategoryUnknown    Category = "unknown"
+import (
+	"strings"
 )
 
-type Severity string
+type FieldError struct {
+	Field  string
+	Reason string
+}
+
+type ValidationError struct {
+	Fields []FieldError
+}
 
 const (
-	SeverityLow      Severity = "low"
-	SeverityMedium   Severity = "medium"
-	SeverityHigh     Severity = "high"
-	SeverityCritical Severity = "critical"
-	SeverityUnknown  Severity = "unknown"
+	reasonMD5          = "must be 32 hexadecimal characters"
+	reasonName         = "must be between 1 and 255 characters"
+	reasonDescription  = "must be at most 2000 characters"
+	reasonCategory     = "must be one of the allowed categories"
+	reasonSeverity     = "must be one of the allowed severities"
+	reasonTagsCount    = "must contain at most 30 items"
+	reasonTag          = "each tag must be between 1 and 50 characters"
+	reasonTagDuplicate = "must not contain duplicate tags"
+	reasonTagNil       = "must not be nil"
+	reasonUTC          = "must be in UTC"
+	reasonDateOrder    = "must not be before firstSeen"
 )
 
-type Threat struct {
-	MD5         string
-	Name        string
-	Description *string
-	Category    Category
-	Severity    Severity
-	Tags        []string
-	FirstSeen   *time.Time
-	LastSeen    *time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+// Error implements the error interface.
+func (e *ValidationError) Error() string {
+	if e == nil || len(e.Fields) == 0 {
+		return "validation failed"
+	}
+
+	var b strings.Builder
+	b.WriteString("validation failed")
+	for _, f := range e.Fields {
+		b.WriteString("; ")
+		b.WriteString(f.Field)
+		b.WriteString(": ")
+		b.WriteString(f.Reason)
+	}
+	return b.String()
 }
 
-type CreateThreat struct {
-	MD5         string
-	Name        string
-	Description *string
-	Category    Category
-	Severity    Severity
-	Tags        []string
-	FirstSeen   *time.Time
-	LastSeen    *time.Time
-}
-
-type UpdateThreat struct {
-	Name        string
-	Description *string
-	Category    Category
-	Severity    Severity
-	Tags        []string
-	FirstSeen   *time.Time
-	LastSeen    *time.Time
+// Add appends a field-level validation problem.
+func (e *ValidationError) Add(field FieldError) {
+	e.Fields = append(e.Fields, field)
 }
