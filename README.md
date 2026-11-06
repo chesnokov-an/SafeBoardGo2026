@@ -1,6 +1,61 @@
 # Kaspersky SafeBoard
 ### Необходимо реализовать веб сервер с REST-интерфейсом для обмена информацией про угрозы на основе OpenAPI спецификации. Перед реализацией необходимо дополнить модель угрозы полями.
 
+## Реализация
+
+Сервис на Go 1.24: HTTP API для обмена информацией об угрозах и in-memory хранилище.
+Актуальный контракт — [openapi.yaml](openapi.yaml), архитектура и принятые решения — [docs/architecture.md](docs/architecture.md).
+
+### Быстрый старт
+
+```bash
+make run          # http://localhost:8080
+make test         # все тесты
+make test-race    # тесты с race detector
+make lint         # golangci-lint
+```
+
+Запуск в Docker:
+
+```bash
+make docker-up
+curl http://localhost:8080/health
+docker compose logs -f
+make docker-down
+```
+
+В контейнере адрес переопределяется на `0.0.0.0:8080`, иначе порт не будет доступен с хоста.
+
+### Маршруты
+
+| Метод | Путь | Успех | Ошибки |
+|---|---|---|---|
+| `GET` | `/info/{md5}` | `200` | `400`, `404`, `500` |
+| `PUT` | `/info/{md5}` | `200` | `400`, `404`, `413`, `415`, `500` |
+| `POST` | `/info` | `201` | `400`, `409`, `413`, `415`, `500` |
+| `GET` | `/health` | `200` | — |
+
+`POST` и `PUT` принимают только `Content-Type: application/json`. Лимит тела — 1 MiB по умолчанию. Ошибки возвращаются в формате `{"message": "...", "details": "..."}`. `/health` — служебный эндпоинт для Docker healthcheck.
+
+### Конфигурация
+
+Настройки читаются из `cmd/server/config.yaml`, переменные окружения имеют приоритет.
+
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `API_ADDRESS` | `localhost:8080` | адрес HTTP-сервера |
+| `LOG_LEVEL` | `DEBUG` | `DEBUG`, `INFO`, `ERROR` |
+| `BODY_LIMIT` | `1048576` | максимальный размер тела, байт |
+| `API_SHUTDOWN_TIMEOUT` | `8s` | таймаут graceful shutdown |
+
+Остальные таймауты (`read_timeout`, `write_timeout`, `idle_timeout` и т.д.) — в `cmd/server/config.yaml`.
+
+Данные хранятся в памяти: после перезапуска сервиса записи теряются.
+
+---
+
+Ниже — исходная постановка задачи. Актуальная спецификация — в [openapi.yaml](openapi.yaml).
+
 ### Начальный openapi:
 ```
 openapi: 3.0.0
@@ -199,3 +254,5 @@ components:
 2. tags: нет uniqueItems, а pattern: '\S' пропускает "  a  ". Дубликаты удаляются, краевые пробелы обрезаются.
 3. - Добавил 413 при превышении лимита тела.
    - Добавил 415 при провале проверки на Content-Type.
+4. Добавил служебный `GET /health` (вне исходной спеки) — используется Docker healthcheck.
+5. Хранилище in-memory: после перезапуска сервиса данные теряются.
