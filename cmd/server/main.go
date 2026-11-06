@@ -11,8 +11,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	handlers "github.com/chesnokov-an/SafeBoardGo2026/internal/api"
+	"github.com/chesnokov-an/SafeBoardGo2026/internal/api"
 	"github.com/chesnokov-an/SafeBoardGo2026/internal/config"
+	"github.com/chesnokov-an/SafeBoardGo2026/internal/storage"
 )
 
 func main() {
@@ -33,11 +34,8 @@ func run(cfg config.Config, log *slog.Logger) error {
 	log.Info("starting server")
 	log.Debug("debug messages are enabled")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /info/{md5}", handlers.GetThreatByHash)
-	mux.HandleFunc("PUT /info/{md5}", handlers.ModifyThreat)
-	mux.HandleFunc("POST /info", handlers.CreateThreat)
-	mux.HandleFunc("GET /health", handlers.Health)
+	store := storage.NewMemory()
+	handler := api.New(store, cfg.HTTPConfig.BodyLimit, log)
 
 	server := http.Server{
 		Addr:              cfg.HTTPConfig.Address,
@@ -45,7 +43,7 @@ func run(cfg config.Config, log *slog.Logger) error {
 		ReadTimeout:       cfg.HTTPConfig.ReadTimeout,
 		WriteTimeout:      cfg.HTTPConfig.WriteTimeout,
 		IdleTimeout:       cfg.HTTPConfig.IdleTimeout,
-		Handler:           mux,
+		Handler:           handler.Routes(),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -68,6 +66,7 @@ func run(cfg config.Config, log *slog.Logger) error {
 			_ = server.Close()
 			return fmt.Errorf("graceful shutdown: %w", err)
 		}
+		//nolint:errcheck
 		<-errCh
 	}
 	return nil

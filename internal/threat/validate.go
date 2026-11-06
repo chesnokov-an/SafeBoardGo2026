@@ -38,6 +38,15 @@ func validateMD5(md5 string) *FieldError {
 	return nil
 }
 
+func ParseMD5(rawMD5 string) (string, error) {
+	md5 := normalizeMD5(rawMD5)
+	field := validateMD5(md5)
+	if field == nil {
+		return md5, nil
+	}
+	return "", &ValidationError{[]FieldError{*field}}
+}
+
 func normalizeName(name string) string {
 	name = strings.TrimSpace(name)
 	return name
